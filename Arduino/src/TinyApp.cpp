@@ -62,15 +62,11 @@ void TinyApp::setActive(bool isActive) {
 void TinyApp::drawTitle() {
 	const char* appName = getAppName();
 	if (appName) {
-		LCD.clear();
-		LCD.setTextProp(true);
-		LCD.setTextScale(1, 2);
-		LCD.setTextStyle(true);
-		LCD.print(LCD.CENTER, LCD.CENTER, (char*)appName);
-		LCD.flush();
+		LCD.drawMessage(appName);
+
 		unsigned long tick = millis();
 		while (millis() - tick < 750) {
-			if (btn4.read()) break;
+			if (btnSide.read()) break;
 			delay(10);
 		}
 		LCD.clear();

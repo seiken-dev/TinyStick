@@ -43,5 +43,3 @@
 #define FREQ_A7 3520
 #define FREQ_B7 3951
 #define FREQ_C8 4186
-
-

@@ -20,6 +20,9 @@ FontTest fontTest;
 #include "app/Tetris.h"
 Tetris tetris;
 
+#include "app/Maze3D.h"
+Maze3D maze3D;
+
 void drawTitle() {
 	LCD.clear();
 	LCD.setTextProp(true);
@@ -33,6 +36,7 @@ void drawTitle() {
 	LCD.setTextScale(2, 3);
 	LCD.print(42, 25, "Stick!");
 	LCD.flush();
+	LCD.reset();
 }
 
 void flash(uint16_t ms = 20) {
@@ -88,14 +92,14 @@ void loop() {
 
 	Button::updateAll();
 
-	if (btn4.wasPressed()) {
+	if (btnSide.wasPressed()) {
 		buzzer.click();
 	}
-	if (btn4.wasLongPressed()) {
+	if (btnSide.wasLongPressed()) {
 		LCD.backLight(!LCD.isBackLight());
 		Serial.printf("BL=%d\n", LCD.isBackLight());
-		btn4.waitForRelease();
-	} else if (btn4.wasReleased()) {
+		btnSide.waitForRelease();
+	} else if (btnSide.wasReleased()) {
 		TinyApp::nextApp();
 	} else {
 		TinyApp* app = TinyApp::getApp();

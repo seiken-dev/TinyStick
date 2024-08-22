@@ -1,38 +1,31 @@
 #pragma once
 
-#include <stdint.h>
-#include "TinyStickDef.h"
+#include "AQM1248A.h"
 
 #define TEXT_BUFFER_SIZE 20
 
 //
-// TinyLCD class (AQM1248A driver)
+// TinyLCD class
 //
-class TinyLCD {
+class TinyLCD : public AQM1248A {
 public:
-	static const uint8_t WIDTH = 128;
-	static const uint8_t HEIGHT = 48;
-	static const uint8_t PAGES = 6;
 	static const int16_t CENTER = INT16_MAX;
 
 	TinyLCD() {}
 
-	void begin(uint8_t pin_RS, uint8_t pin_CS, uint8_t pin_BL);
-	void cmd(uint8_t cmd);
-	void cmds(const uint8_t cmds[], uint8_t len);
-	void data(uint8_t data);
-	void backLight(bool on) {
-		digitalWrite(_pin_BL, on);
-		_backLight = on;
-	}
-	bool isBackLight() { return _backLight; }
-
-	void clear();
-	void flush(uint8_t offset = 0);
-	void drawPixel(int16_t x, int16_t y, bool set = 1);
 	void fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, bool set = 1);
 	void drawBitmap(const uint8_t* bitmap, int16_t x, int16_t y, uint8_t w = 8, uint8_t h = 8,
 			uint8_t scaleX = 1, uint8_t scaleY = 1, bool bold = false, bool invert = false, bool overwrite = false);
+#ifdef LCD_DRAW_LINE
+	void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool set = 1);
+#endif
+	void drawHLine(int16_t x, int16_t y, uint8_t w, bool set = 1) {
+		fillRect(x, y, w, 1, set);
+	}
+	void drawVLine(int16_t x, int16_t y, uint8_t h, bool set = 1) {
+		fillRect(x, y, 1, h, set);
+	}
+
 #ifdef LCD_VERTICAL
 	void setVertical(bool vertical = false) {
 		_vertical = vertical;
@@ -47,6 +40,9 @@ public:
 #endif
 	void print(int16_t x, int16_t y, char c);
 	void print(int16_t x, int16_t y, char* str);
+	void print(int16_t x, int16_t y, const char* str) {
+		print(x, y, (char*)str);
+	}
 	void printf(int16_t x, int16_t y, const char* fmt, ...);
 	void drawMessage(const char* msg);
 
@@ -71,13 +67,19 @@ public:
 		_textInvert = invert;
 		_textOverwrite = overwrite;
 	}
-	void setTextProp(bool textProp = false) {
+
 #ifdef LCD_TEXT_PROP
+	void setTextProp(bool textProp = false) {
 		if (_fontWidthTable) {
 			_textProp = textProp;
 		}
-#endif
 	}
+	uint8_t calcTextWidth(char c);
+	uint16_t calcTextWidth(char* str);
+	uint8_t calcPaddingLeft(char c);
+#else
+	void setTextProp(bool textProp = false) {}
+#endif
 
 	void reset() {
 		setTextScale();
@@ -88,21 +90,8 @@ public:
 #endif
 	}
 
-
 protected:
-	uint8_t _pin_RS;
-	uint8_t _pin_CS;
-	uint8_t _pin_BL;
-
-	bool _backLight = false;
-
-	uint8_t _vram[PAGES][WIDTH];
 	char _textBuffer[TEXT_BUFFER_SIZE];
-#ifdef LCD_VERTICAL
-	bool _vertical = false;
-	uint8_t _width = WIDTH;
-	uint8_t _height = HEIGHT;
-#endif
 
 	const uint8_t* _fontBitmap = nullptr;
 #ifdef LCD_TEXT_PROP
@@ -123,11 +112,6 @@ protected:
 	int16_t calcCenter(int16_t v, uint8_t vMax, uint8_t size) {
 		return (v != CENTER) ? v : (vMax - size) / 2;
 	}
-#ifdef LCD_TEXT_PROP
-	uint8_t calcTextWidth(char c);
-	uint16_t calcTextWidth(char* str);
-	uint8_t calcPaddingLeft(char c);
-#endif
 };
 
 extern TinyLCD LCD;

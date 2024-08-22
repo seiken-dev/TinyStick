@@ -46,7 +46,6 @@ void EnvHat::update() {
 #endif
 }
 
-
 bool EnvHat::read() {
 	uint8_t data[6];
 

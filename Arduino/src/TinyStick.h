@@ -36,6 +36,7 @@ extern Button btn1;
 extern Button btn2;
 extern Button btn3;
 extern Button btn4;
+extern Button btn5;
 
 //
 // Buzzer class

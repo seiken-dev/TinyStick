@@ -5,97 +5,8 @@
 //
 // TinyLCD class
 //
-// https://github.com/SWITCHSCIENCE/samplecodes/tree/master/AQM1248A_breakout/Arduino/AQM1248A_lib
 
 TinyLCD LCD;
-
-#ifndef LCD_VERTICAL
-#define _width WIDTH
-#define _height HEIGHT
-#endif
-
-#define CMD_DELAY 0xFF
-
-const static uint8_t initCmds[] = {0xAE, 0xA0, 0xC8, 0xA3, 0x2C, CMD_DELAY, 0x2E, CMD_DELAY, 0x2F, 0x23, 0x81, 0x1C, 0xA4, 0x40, 0xA6, 0xAF };
-
-void TinyLCD::begin(uint8_t pin_RS, uint8_t pin_CS, uint8_t pin_BL) {
-	_pin_RS = pin_RS;
-	_pin_CS = pin_CS;
-	_pin_BL = pin_BL;
-
-	pinMode(_pin_RS, OUTPUT);
-	pinMode(_pin_CS, OUTPUT);
-	pinMode(_pin_BL, OUTPUT);
-	digitalWrite(_pin_CS, HIGH);
-
-	SPI.begin();
-	SPI.setBitOrder(MSBFIRST);
-	SPI.setClockDivider(SPI_CLOCK_DIV2);
-	SPI.setDataMode(SPI_MODE3);
-
-	cmds(initCmds, sizeof(initCmds));
-
-	clear();
-}
-
-void TinyLCD::cmd(uint8_t cmd) {
-	digitalWrite(_pin_RS, LOW);
-	digitalWrite(_pin_CS, LOW);
-	SPI.transfer(cmd);
-	digitalWrite(_pin_CS, HIGH);
-}
-
-void TinyLCD::cmds(const uint8_t cmds[], uint8_t len) {
-	for (uint8_t i = 0; i < len; i++ ) {
-		uint8_t c = cmds[i];
-		if (c == CMD_DELAY) {
-			delay(2);
-		} else {
-			cmd(c);
-		}
-	}
-}
-
-void TinyLCD::data(uint8_t data) {
-	digitalWrite(_pin_RS, HIGH);
-	digitalWrite(_pin_CS, LOW);
-	SPI.transfer(data);
-	digitalWrite(_pin_CS, HIGH);
-}
-
-void TinyLCD::clear() {
-	memset((void*)_vram, 0, sizeof(_vram));
-}
-
-void TinyLCD::flush(uint8_t offset) {
-	for (int page = 0; page < PAGES; page++) {
-		cmd(0xb0 + page);
-		cmd(0x10);
-		cmd(0x00);
-		for (int col = 0; col < WIDTH; col++) {
-			int col1 = (col + offset) % WIDTH;
-			data(_vram[page][col1]);
-		}
-	}
-}
-
-void TinyLCD::drawPixel(int16_t x, int16_t y, bool set) {
-#ifdef LCD_VERTICAL
-	if (_vertical) {
-		int16_t t = x;
-		x = y;
-		y = HEIGHT - t - 1;
-	}
-#endif
-	if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return;
-	uint8_t* p = (uint8_t*)_vram + ((y / 8) * WIDTH + x);
-	uint8_t mask = (1 << (y % 8));
-	if (set) {
-		*p |= mask;
-	} else {
-		*p &= ~mask;
-	}
-}
 
 void TinyLCD::fillRect(int16_t x, int16_t y, uint8_t w, uint8_t h, bool set) {
 	if (w == 1 && h == 1) {
@@ -128,7 +39,8 @@ void TinyLCD::drawBitmap(const uint8_t* bitmap, int16_t x, int16_t y, uint8_t w,
 	uint8_t wbyte = w / 8;
 	for (uint8_t j = 0; j < h; j++) {
 		for (uint8_t i = 0; i < wbyte; i++) {
-			uint8_t bits = *p++;
+//			uint8_t bits = *p++;
+			uint8_t bits = *(p + (wbyte - i - 1));
 			if (bold) {
 				bits |= (bits >> 1);
 			}
@@ -146,14 +58,14 @@ void TinyLCD::drawBitmap(const uint8_t* bitmap, int16_t x, int16_t y, uint8_t w,
 				}
 			}
 		}
+		p += wbyte;
 	}
 }
-
 
 void TinyLCD::print(int16_t x, int16_t y, char c) {
 #ifdef LCD_TEXT_PROP
 	x = calcCenter(x, _width, calcTextWidth(c));
-	x -= calcPaddingLeft(c);
+	x -= calcPaddingLeft(c) * _textScaleX;
 	bool textOverwrite = _textOverwrite || _textProp;
 #else
 	x = calcCenter(x, _width, _fontWidth * _textScaleX);
@@ -205,12 +117,12 @@ uint8_t TinyLCD::calcTextWidth(char c) {
 uint16_t TinyLCD::calcTextWidth(char* str) {
 	if ( !_textProp) return _fontWidth * _textScaleX * strlen(str);
 	uint16_t w = 0;
+	uint8_t len = 0;
 	while (char c = *str++) {
-		if (w) {
-			w++;
-		}
-		w += _fontWidthTable[c - 0x20] + _textBold;
+		w += _fontWidthTable[c - 0x20];
+		len++;
 	}
+	w += (len - 1) * (_textBold + 1);
 	return w * _textScaleX;
 }
 
@@ -222,11 +134,40 @@ uint8_t TinyLCD::calcPaddingLeft(char c) {
 
 #endif
 
+#ifdef LCD_DRAW_LINE
+
+// https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+
+void TinyLCD::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool set) {
+	int16_t dx = abs(x1 - x0);
+	int16_t dy = abs(y1 - y0);
+	int8_t sx = (x0 < x1) ? 1 : -1;
+	int8_t sy = (y0 < y1) ? 1 : -1;
+	int16_t err = dx - dy;
+
+	for (;;) {
+		LCD.drawPixel(x0, y0, set);
+		// if (x0 == x1 && y0 == y1) break;
+		if ((sx > 0 ? x0 >= x1 : x0 <= x1) && (sy > 0 ? y0 >= y1 : y0 <= y1)) break;
+		if (err + err > -dy) {
+			err -= dy;
+			x0 += sx;
+		}
+		if (err + err < dx) {
+			err += dx;
+			y0 += sy;
+		}
+	}
+}
+#endif
+
 void TinyLCD::drawMessage(const char* msg) {
 	clear();
 	setTextStyle(true);
 	setTextScale(1, 2);
+	setTextProp(true);
 	print(CENTER, CENTER, (char*)msg);
 	flush();
+	reset();
 }
 

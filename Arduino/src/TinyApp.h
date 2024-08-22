@@ -35,5 +35,3 @@ protected:
 	bool _isReady = true;
 	bool _initialized = false;
 };
-
-

@@ -8,8 +8,8 @@ Blenderのデータは、各パーツを結合する前のものです。Blender
 JLCPCBの[3Dプリントサービス](https://jlc3dp.com/)では、重複した面があると警告が出ますが、そのまま印刷しても問題ないようです。**Case**,**CaseBtm**のSTL出力前に、その他のパーツを上記いづれかの方法で結合してください。
 
 ### Case
-- BtnEmboss1-3
-- SW4Button
+- BtnEmboss1-4
+- SW5Button
 - PCB.Knob, 001
 - PCB.Pole, 001
 
@@ -20,4 +20,4 @@ JLCPCBの[3Dプリントサービス](https://jlc3dp.com/)では、重複した�
 - CaseBtmB.Knob, 001
 - CaseBtmF.Knob, 001
 - CaseBtmF.Pad
-- MagHolder, 001
+- MagHolder, 001, 002

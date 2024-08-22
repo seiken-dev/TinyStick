@@ -67,7 +67,6 @@ void Tetris::setActive(bool isActive) {
 	}
 }
 
-
 void Tetris::start() {
 	memset(cells, 0, sizeof(cells));
 	throwIn();
@@ -95,7 +94,11 @@ void Tetris::update() {
 			minoX--;
 			buzzer.click();
 		}
+#if (BUTTONS_COUNT == 5)
+	} else if (btn4.wasPressed()) {
+#else
 	} else if (btn1.wasLongPressed(500)) {
+#endif
 		isFalling = true;
 		buzzer.beep(FREQ_E6, 100, false);
 	} else if (btn1.wasReleased() && !isFalling) {

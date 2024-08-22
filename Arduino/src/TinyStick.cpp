@@ -3,16 +3,26 @@
 //
 // Button class
 //
-#define BUTTONS_COUNT 4
 
-static const uint8_t button_pins[BUTTONS_COUNT] = { PIN_BUTTON1, PIN_BUTTON2, PIN_BUTTON3, PIN_BUTTON4 };
+static const uint8_t button_pins[BUTTONS_COUNT] = { PIN_BUTTON1, PIN_BUTTON2, PIN_BUTTON3, PIN_BUTTON4
+#if (BUTTONS_COUNT == 5)
+	, PIN_BUTTON5
+#endif
+};
 
 Button btn1(PIN_BUTTON1);
 Button btn2(PIN_BUTTON2);
 Button btn3(PIN_BUTTON3);
 Button btn4(PIN_BUTTON4);
+#if (BUTTONS_COUNT == 5)
+Button btn5(PIN_BUTTON5);
+#endif
 
-static Button* buttons[] = { &btn1, &btn2, &btn3, &btn4 };
+static Button* buttons[] = { &btn1, &btn2, &btn3, &btn4
+#if (BUTTONS_COUNT == 5)
+, &btn5
+#endif
+};
 
 void Button::init() {
 	for (uint8_t i = 0; i < BUTTONS_COUNT; i++) {
@@ -139,7 +149,6 @@ void tsDetachInterrupt(uint8_t pin) {
 	*pin_ctrl_reg &= ~(PORT_ISC_gm);
 	sei();
 }
-
 
 static void wakeUp() {
 }
