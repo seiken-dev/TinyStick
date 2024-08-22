@@ -3,7 +3,7 @@
 <img alt="TinyStick" width="50%" src="./images/TinyStick_web01.jpg">
 </p>
 
-**TinyStick**は、**ATtiny3217**(32KB Flash, 2KB SRAM, 256B EEPROM)を搭載した、Arduino互換の開発キットです。消費電流は約4.5mA(クロック10MHz。スリープ時は0.1mA未満)と小さく、コイン電池で長期間動作します。プログラムの書き込みは、付属の**USBシリアル変換基板**(CH340E搭載)で行います。詳しくは、 [tinystick.jp](https://tinystick.jp)をご覧ください。
+**TinyStick**は、**ATtiny3217**(32KB Flash, 2KB SRAM, 256B EEPROM)を搭載した、Arduino互換の開発キットです。消費電流は約4.5mA(クロック10MHz。スリープ時は0.1mA未満)と小さく、コイン電池で長期間動作します。プログラムの書き込みは、付属の**USBシリアル変換基板**(CH340E搭載)で行います。詳しくは、 [tinystick.jp](https://www.tinystick.jp)をご覧ください。
 
 # コンテンツ
 - **Arduino**<br>
@@ -58,7 +58,7 @@ CPUクロックを設定します。初期値は10MHz、最大は20MHzです。�
 - **TinyApp.h .cpp**<br>
 複数のアプリを切り替えるときは、このクラスの派生クラスを作成して**main.cpp**に定義するだけで、サイドボタン(**Button5**)で切り替えられます。
 
-- **I2Cbaase.h .cpp**<br>
+- **I2Cbase.h .cpp**<br>
 本体内蔵の加速度センサ(**LIS2DH12**)と、M5StickC用のENV Hat(**SHT30**)の基底クラスです。
 
 - **octave.h**<br>
