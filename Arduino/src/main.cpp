@@ -111,7 +111,7 @@ void loop() {
 	TinyApp::updateApp();
 
 	flash();
-	unsigned long elapse = millis() - tick;
+	uint32_t elapse = millis() - tick;
 	if (elapse < MIN_DELAY) {
 		delay(MIN_DELAY - elapse);
 	}
